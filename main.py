@@ -20,6 +20,8 @@ import requests
 import zipfile
 import copy
 import hashlib
+import time
+from tqdm import tqdm
 import struct
 import binascii
 from binascii import hexlify as _hexlify, unhexlify
@@ -145,30 +147,56 @@ def del_file(path):
             os.remove(c_path)
 
 # 下载解压主题文件
+def download_file(id, dzip_name):
+    with requests.get(base_url+id+'/download', stream=True) as r, open(dzip_name, 'wb') as file:
+      # 请求文件的大小单位字节B
+      total_size = int(r.headers['content-length'])
+      # 以下载的字节大小
+      content_size = 0
+      # 请求开始的时间
+      start_time = time.time()
+      # 上秒的下载大小
+      temp_size = 0
+      # 进度条
+      pbar = tqdm(total=total_size, initial=content_size,unit='B', unit_scale=True, desc=dzip_name+': ')
+      # 开始下载每次请求1024字节
+      for content in r.iter_content(chunk_size=1024):
+        file.write(content)
+        # 统计以下载大小
+        content_size += len(content)
+        # 下载进度条
+        pbar.update(content_size - temp_size)
+        # 重置以下载大小
+        temp_size = content_size
+      pbar.close()
+
+# 下载解压主题文件
 def download_themes(id):
-    print("\n 正在下载主题文件，请稍等... \n")
-    dzip_name = 'themes.zip'
-    dcp_name = 'themes'
-    r =  requests.get(base_url+id+'/download')
-    with open(dzip_name,'wb') as code:
- 	   code.write(r.content)
-    zip_file = zipfile.ZipFile(dzip_name)
-    zip_list = zip_file.namelist()
-    for f in zip_list:
-       zip_file.extract(f,dcp_name)
-    zip_file.close()
-    os.remove(dzip_name)
+  print("\n 正在下载主题文件，请稍等... \n")
+  dzip_name = 'themes.zip'
+  dcp_name = 'themes'
+  download_file(id,dzip_name)
+  zip_file = zipfile.ZipFile(dzip_name)
+  zip_list = zip_file.namelist()
+  for f in zip_list:
+     zip_file.extract(f,dcp_name)
+  zip_file.close()
+  os.remove(dzip_name)
 
 #--------------判断版本---------
-if not os.path.isfile(bootori):
-    print("\n 执行失败：未检测到boot_ori.dat文件，请先将原版boot.dat更名至boot_ori.dat后执行")
-    sys.exit()
-
 def get_ver_int(boot_ver):
     if (boot_ver[1] == 0x302E) and (boot_ver[0] == 0x312E3356) and (sha256 == "f05c9c9f1a862ff7ac6ae44fe5bf0bb4749db0b2dc6565f6f0f2acdbe81bb06b"):       # TX BOOT V3.1.0
         return 310
     else:
         return 000
+
+if not os.path.isfile(bootori):
+    print("\n 未检测到boot_ori.dat文件，正在进行下载 \n")
+    download_file('779653','boot_ori.dat')
+
+if not os.path.isfile('GFX_sxos.exe'):
+    print("\n 未检测到GFX_sxos.exe文件，正在进行下载 \n")
+    download_file('779644','GFX_sxos.exe')
 
 f = open(bootori, "rb")
 b = f.read()
@@ -243,8 +271,8 @@ elif themesId == "9":
   download_themes("774729")
 elif themesId == "10":
   download_themes("774737")
-os.system("GFX_sxos.exe")
 print('\n')
+os.system("GFX_sxos.exe")
 
 while (1):
  icone_holder = input('\n 是否新增一个引导: 是 (y): 否 (n): ') or "y"
@@ -807,5 +835,3 @@ elif os.path.isfile(Request) and islicense == "y":
         Licence_tmp.write(unhexlify(signature))
         print("\n 成功创建license证书!!!")
 #------------------------
-print("\n")
-os.system('pause')
