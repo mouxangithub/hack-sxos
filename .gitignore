@@ -4,3 +4,8 @@ boot.dat
 license.dat
 boot_ori.dat
 GFX_sxos.exe
+__pycache__/
+build/
+dist/
+main.spec
+hacksxos.spec

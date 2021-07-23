@@ -206,8 +206,9 @@ f.close()
 version = get_ver_int(struct.unpack("II", b[0x08:0x10]))
 
 if version != 310:
-    print("\n 请使用未修改的SXOS3.1的boot.dat")
-    sys.exit()
+  print("\n 请使用未修改的SXOS3.1的boot.dat，然后进行重命名boot_ori.dat，或者删除boot_ori.dat，程序会自动进行下载3.1的boot \n")
+  os.system('pause')
+  sys.exit()
 #--------------判断版本End---------
 
 #--------------用户输入判断---------
@@ -290,7 +291,8 @@ if os.path.isfile('out/holder.bin') and icone_holder == 'y':
   name3 = input('\n 请设置第三个按钮的名字(默认: Boot original FW):') or "Boot original FW"
   print(' '+name3)
 elif not os.path.isfile('out/holder.bin') and icone_holder == 'y':
-  print('未检测到out目录下的holder.bin文件，请确认themes下是否有holder.bmp文件并且运行了GFX_sxos.exe')
+  print('未检测到out目录下的holder.bin文件，请确认themes下是否有holder.bmp文件并且运行了GFX_sxos.exe \n')
+  os.system('pause')
   sys.exit()
 
 while (1):
@@ -835,3 +837,5 @@ elif os.path.isfile(Request) and islicense == "y":
         Licence_tmp.write(unhexlify(signature))
         print("\n 成功创建license证书!!!")
 #------------------------
+print("\n")
+os.system('pause')
